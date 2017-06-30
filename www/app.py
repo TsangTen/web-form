@@ -15,13 +15,13 @@ from datetime import datetime
 def init_jinja2(app, **kw):  # 初始化jinja2模板
 	logging.info('Init jinja2...')
 	options = dict(
-			autoescape = kw.get('autoescape', True),
-			auto_reload = kw.get('auto_reload', True),
-			block_start_string = kw.get('block_start_string', '{%'),
-			block_end_string = kw.get('block_end_string', '%}'),
-			variable_start_string = kw.get('variable_start_string', '{{'),
-			variable_end_string = kw.get('variable_end_string', '}}')
-		)
+		autoescape = kw.get('autoescape', True),
+		auto_reload = kw.get('auto_reload', True),
+		block_start_string = kw.get('block_start_string', '{%'),
+		block_end_string = kw.get('block_end_string', '%}'),
+		variable_start_string = kw.get('variable_start_string', '{{'),
+		variable_end_string = kw.get('variable_end_string', '}}')
+	)
 	path = kw.get('path', None)
 	if path is None:
 		path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
