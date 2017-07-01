@@ -11,6 +11,7 @@ import asyncio
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
+import orm
 
 def init_jinja2(app, **kw):  # 初始化jinja2模板
 	logging.info('Init jinja2...')
