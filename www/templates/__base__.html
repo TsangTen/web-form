@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	{% block meta %}<!-- block meta -->{% endblock %}
+	<!-- 用于子页面定义一些meta，例如rss feed -->
+	<title>{% block title %} ? {% endblock %} - Web Form</title>
+	<!-- 覆盖页面的标题 -->
+	<link rel="stylesheet" type="text/css" href="/static/css/uikit.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/uikit.gradient.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/awesome.css">
+	<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/js/sha1.js"></script>
+	<script type="text/javascript" src="/static/js/uikit.min.js"></script>
+	<script type="text/javascript" src="/static/js/sticky.min.js"></script>
+	<script type="text/javascript" src="/static/js/vue.min.js"></script>
+	<script type="text/javascript" src="/static/js/awesome.js"></script>
+	{% block beforehead %}<!-- before head -->{% endblock %}
+	<!-- 子页面可以在<head>标签关闭前插入JavaScript代码 -->
+</head>
+<body>
+	<nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
+		<div class="uk-container uk-container-center">
+			<a href="/" class="uk-navbar-brand">WebForm</a>
+			<ul class="uk-navbar-nav">
+				<li data-url="reports"><a href="/"><i class="uk-icon-home"></i>报告</a></li>
+				<li><a href="/manage/"><i class="uk-icon-book"></i>管理</a></li>
+			</ul>
+			<div class="uk-navbar-flip">
+				<ul class="uk-navbar-nav">
+					{% if __user__ %}
+					<li class="uk-parent" data-uk-dropdown>
+						<a href="#0"><i class="uk-icon-user"></i>{{ __user__.name }}</a>
+						<div class="uk-dropdown uk-dropdown-navbar">
+							<ul class="uk-nav uk-nav-navbar">
+								<li><a href="/signout"><i class="uk-icon-sign-out"></i>登出</a></li>
+							</ul>
+						</div>
+					</li>
+					{% else %}
+					<li><a href="/signin"><i class="uk-icon-sign-in"></i>登录</a></li>
+					<li><a href="/register"><i class="uk-icon-edit"></i>注册</a></li>
+					{% endif %}
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="uk-container uk-container-center">
+		<div class="uk-grid">
+			<!-- content，子页面的content布局和内容 -->
+			{% block content %}
+			{% endblock %}
+			<!-- // content -->
+		</div>
+	</div>
+
+</body>
+</html>

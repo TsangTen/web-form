@@ -1,0 +1,26 @@
+{% extends '__base__.html' %}
+
+{% block title %}报告{% endblock %}
+
+{% block beforehead %}
+
+<script type="text/javascript">
+	
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="uk-width-medium-3-4">
+	{% for report in reports %}
+	<article class="uk-article">
+		<h2><a href="/report/{{ report.id }}">{{ report.title }}</a></h2>
+		<p class="uk-article-meta">{{ report.created_at|datetime }}</p>
+		<p><a href="/report/{{ report.id }}">继续阅读<i class="uk-icon-double-right"></i></a></p>
+	</article>
+	<hr class="uk-article-divider">
+	{% endfor %}
+</div>
+
+{% endblock %}

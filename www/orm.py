@@ -10,7 +10,7 @@ import aiomysql
 
 def log(sql, args=()):
 	logging.info('SQL: %s' % sql)
-	logging.info('Args: %s' % args)
+	logging.info('Args: %s' % (args or ''))
 
 async def create_pool(loop, **kw):
 	logging.info('Create database connection pool...')
@@ -72,7 +72,7 @@ class Field(object):
 		self.primary_key = primary_key
 		self.default = default
 	
-	def str(self):
+	def __str__(self):
 		return '<%s, %s:%s>' % (self.__class__.__name__, self.column_type, self.name)
 
 class StringField(Field):
@@ -116,12 +116,12 @@ class ModelMetaclass(type):
 				mappings[k] = v
 				if v.primary_key:
 					if primaryKey:
-						raise StandardError('Duplicate primary key for field: %s' % k)
-					primary_key = k
+						raise BaseException('Duplicate primary key for field: %s' % k)
+					primaryKey = k
 				else:
 					fields.append(k)
 		if not primaryKey:
-			raise StandardError('Primary key not found.')
+			raise BaseException('Primary key not found.')
 		for k in mappings.keys():
 			attrs.pop(k)
 		escaped_fields = list(map(lambda f: '`%s`' % f, fields))
@@ -153,7 +153,10 @@ class Model(dict, metaclass=ModelMetaclass):
 		return getattr(self, key, None)
 
 	def getValueOrDefault(self, key):
+		logging.info('SELFFF %s'%self)
+		logging.info('getValueOrDefault Key: %s' % key)
 		value = getattr(self, key, None)
+		# logging.info('getValueOrDefault Value: ', value)
 		if value is None:
 			field = self.__mappings__[key]
 			if field.default is not None:
@@ -172,7 +175,7 @@ class Model(dict, metaclass=ModelMetaclass):
 			args = []
 		orderBy = kw.get('orderBy', None)
 		if orderBy:
-			sql.append('orderBy')
+			sql.append('order by')
 			sql.append(orderBy)
 		limit = kw.get('limit', None)
 		if limit is not None:
@@ -206,10 +209,13 @@ class Model(dict, metaclass=ModelMetaclass):
 		return cls(**rs[0])
 
 	async def save(self):
+		# logging.info('SELF:::::::  %s' % self.__fields__)
+		# logging.info('------ %s' % self.passwd)
 		args = list(map(self.getValueOrDefault, self.__fields__))
+		# logging.info("AAAAAAAAArgs",args)
 		args.append(self.getValueOrDefault(self.__primary_key__))
-		rows = await execute(self.__update__, args)
-		if row != 1:
+		rows = await execute(self.__insert__, args)
+		if rows != 1:
 			logging.warn('Failed to insert record: affected rows: %s' % rows)
 
 	async def update(self):

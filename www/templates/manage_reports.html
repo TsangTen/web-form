@@ -1,0 +1,98 @@
+{% extends '__base__.html' %}
+
+{% block title %}报告{% endblock %}
+
+{% block beforehead %}
+
+<script type="text/javascript">
+	function initVM(data){
+		var vm = new Vue({
+			el: '#vm',
+			data: {
+				reports: data.reports,
+				page: data.page
+			},
+			methods: {
+				edit_report: function(report){
+					location.assign('/manage/reports/edit?id=' + report.id);
+				},
+				delete_report: function(report){
+					if(confirm('确认要删除“' + report.name + '”？删除不可恢复！')) {
+						postJSON('/api/reports/' + report.id + '/delete', function(err, r) {
+							if(err) {
+								return alert(err.message || err.error || err);
+							}
+							refresh();
+						});
+					}
+				}
+			}
+		});
+		$('#vm').show();
+	}
+
+	$(function() {
+		getJSON('/api/reports', {
+			page: {{ page_index }}
+		}, function(err, results) {
+			if(err) {
+				return fatal(err);
+			}
+			$('#loading').hide();
+			initVM(results);
+		});
+	});
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="uk-width-1-1 uk-margin-bottom">
+	<div class="uk-panel -uk-panel-box">
+		<ul class="uk-breadcrumb">
+			<li><a href="/manage/records">xx</a></li>
+			<li class="uk-active"><span>报告</span></li>
+			<li><a href="/manage/users">用户</a></li>
+		</ul>
+	</div>
+</div>
+
+<div id="error" class="uk-width-1-1"></div>
+
+<div id="loading" class="uk-width-1-1 uk-text-center">
+	<span><i class="uk-icon-spinner uk-icon-medium uk-icon-spin"></i>正在加载...</span>
+</div>
+
+<div id="vm" class="uk-width-1-1">
+	<a href="/manage/reports/create" class="uk-button uk-button-primary"><i class="uk-icon-plus"></i>新日志</a>
+
+	<table class="uk-table uk-table-hover">
+		<thead>
+			<tr>
+				<th class="uk-width-5-10">标题/摘要</th>
+				<th class="uk-width-2-10">创作时间</th>
+				<th class="uk-width-1-10">操作</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr v-repeat="report: reports">
+				<td>
+					<a target="_blank" v-attr="href: '/report/'+report.id" v-text="report.title"></a>
+				</td>
+				<td>
+					<span v-text="report.created_at.toDateTime()"></span>
+				</td>
+				<td>
+					<a href="#0" v-on="click: edit_report(report)"><i class="uk-icon-edit"></i></a>
+					<a href="#0" v-on="click: delete_report(report)"><i class="uk-icon-trash-o"></i></a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div v-component="pagination" v-with="page"></div>
+	
+</div>
+
+{% endblock %}

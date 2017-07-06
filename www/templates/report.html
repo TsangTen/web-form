@@ -1,0 +1,140 @@
+{% extends '__base__.html' %}
+
+{% block title %}{{ report.title }}{% endblock %}
+
+{% block beforehead %}
+
+<script type="text/javascript">
+	var record_url = '/api/reports/{{ report.id }}/records';
+
+	$(function(){
+		var $form = $('#form-record');
+		$form.submit(function(e){
+			e.preventDefault();
+			// $form.showFormError('---------------');
+			var major_class = $form.find('input').eq(0).val().trim();
+			var app_name = $form.find('input').eq(1).val().trim();
+			var rule = $form.find('input').eq(2).val().trim();
+			var type_of_change = $form.find('select').eq(0).val().trim();
+			var platform = $form.find('select').eq(1).val().trim();
+			var test_env = $form.find('input').eq(3).val().trim();
+			var recognition = $form.find('select').eq(2).val().trim();
+			var block_from_beginning = $form.find('select').eq(3).val().trim();
+			var block_at_midway = $form.find('select').eq(4).val().trim();
+			var bug = $form.find('input').eq(4).val().trim();
+			var remarks = $form.find('input').eq(5).val().trim();
+			// alert(content)
+			if(major_class===''){
+				return $form.showFormError('大类名不能为空！');
+			}
+			if(app_name===''){
+				return $form.showFormError('应用名不能为空！');
+			}
+			if(rule===''){
+				return $form.showFormError('规则名不能为空！')
+			}
+			if(test_env===''){
+				return $form.showFormError('测试环境不能为空！')
+			}
+			if(bug===''){
+				return $form.showFormError('Bug不能为空!')
+			}
+			if(remarks===''){
+				return $form.showFormError('备注不能为空！')
+			}
+			$form.postJSON(record_url, { 
+				major_class: major_class,
+				app_name: app_name,
+				rule: rule,
+				type_of_change: type_of_change,
+				platform: platform,
+				test_env: test_env,
+				recognition: recognition,
+				block_from_beginning: block_from_beginning,
+				block_at_midway: block_at_midway,
+				bug: bug,
+				remarks: remarks
+			}, function(err, result){
+				if(err){
+					return $form.showFormError(err);
+				}
+				refresh();
+			});
+		});
+	});
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="uk-width-medium-3-4">
+	<article class="uk-article">
+		<h2>{{ report.title }}</a></h2>
+		<p class="uk-article-meta">{{ report.created_at|datetime }}</p>
+		<p>{{ report.html_content|safe }}</p>
+	</article>
+
+	<hr class="uk-article-divider">
+
+	{% if __user__ %}
+	<h3>添加记录</h3>
+
+	<article class="uk-record">
+		<header class="uk-record-header">
+			<h4 class="uk-record-title">{{ __user__.name }}</h4>
+		</header>
+		<div class="uk-record-body">
+			<form id="form-record" class="uk-form">
+				<div class="uk-alert uk-alert-danger uk-hidden"></div>
+				<div class="uk-form-row">
+					<input type="text" placeholder="大类" name="major_class">
+					<input type="text" placeholder="应用" name="app_name">
+					<input type="text" placeholder="规则" name="rule">
+					<select>
+						<option value="修改">修改</option>
+						<option value="新增">新增</option>
+						<option value="无改动">无改动</option>
+					</select>
+					<select>
+						<option value="Android">Android</option>
+						<option value="iOS">iOS</option>
+						<option value="Windows Phone">Windows Phone</option>
+						<option value="Windows">Windows</option>
+						<option value="Mac">Mac</option>
+						<option value="Linux">Linux</option>
+						<option value="Others">Others</option>
+					</select>
+					<input type="text" placeholder="测试环境" name="test_env">
+					<select>
+						<option value="可识别">可识别</option>
+						<option value="无法识别">无法识别</option>
+						<option value="N/A">N/A</option>
+					</select>
+					<select>
+						<option value="Pass">Pass</option>
+						<option value="Fail">Fail</option>
+						<option value="N/A">N/A</option>
+					</select>
+					<select>
+						<option value="Pass">Pass</option>
+						<option value="Fail">Fail</option>
+						<option value="N/A">N/A</option>
+					</select>
+					<input type="text" placeholder="Bug" name="bug">
+					<input type="text" placeholder="备注" name="remarks">
+					<!--
+					<textarea rows="6" placeholder="说点什么吧" style="width: 100%;resize: none;"></textarea>
+					-->
+				</div>
+				<div class="uk-form-row">
+					<button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-record"></i>提交</button>
+				</div>
+			</form>
+		</div>
+	</article>
+
+	{% endif %}
+<!---->
+
+{% endblock %}
