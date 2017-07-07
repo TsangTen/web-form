@@ -71,6 +71,20 @@ def sheet2html(row):
 	)
 	return ''.join(line)
 
+def sheet2list(row):
+	l = list()
+	for k, v in row.items():
+		if k == 'id' or k == 'report_id':
+			continue
+		elif k == 'created_at':
+			dt = datetime.fromtimestamp(v)
+			l.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
+			continue
+		else:
+			l.append(v)
+	line = map(str, l)
+	return list(line)
+
 # 解密cookie
 async def cookie2user(cookie_str):
 	'''
@@ -111,22 +125,24 @@ async def index(request):
 		'reports': reports
 	}
 
+names = [
+	'大类',
+	'应用',
+	'规则',
+	'改动类型',
+	'平台类型',
+	'测试环境',
+	'可识别',
+	'开始封堵',
+	'中途封堵',
+	'bug',
+	'备注',
+	'测试人',
+	'日期'
+]
+
 def get_col_name():
-	names = [
-		'大类',
-		'应用',
-		'规则',
-		'改动类型',
-		'平台类型',
-		'测试环境',
-		'可识别',
-		'开始封堵',
-		'中途封堵',
-		'bug',
-		'备注',
-		'测试人',
-		'日期'
-	]
+	global names
 	l = list()
 	for name in names:
 		l.append('<td>' + name + '</td>')
@@ -134,11 +150,14 @@ def get_col_name():
 
 @get('/report/{id}')
 async def get_report(id):
+	global names
 	report = await Reports.find(id)
 	records = await Records.findAll('report_id=?', [id], orderBy='created_at desc')
 	report.html_sheet = '<table border="1">' + '<tr>'
 	report.html_sheet = report.html_sheet + get_col_name() + '</tr>'
+	report.csv = [names,]
 	for record in records:
+		report.csv.append(sheet2list(record))
 		# logging.info('Type: %s\nRow: %s' %(type(record), record))
 		record.html_sheet = sheet2html(record)
 		record.html_sheet = '<tr>' + record.html_sheet + '</tr>'
@@ -146,6 +165,7 @@ async def get_report(id):
 		report.html_sheet += record.html_sheet
 	report.html_sheet += '</table>'
 	report.html_content = markdown2.markdown(report.html_sheet)
+	
 	return {
 		'__template__': 'report.html',
 		'report': report,
