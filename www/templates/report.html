@@ -68,7 +68,7 @@
 
 		var downloadLink = document.getElementById('downloadLink')
 		var context = "";
-		var content = {{ report.csv|safe }}
+		var content = {{ report.csv|safe }}  //记得加safe，不然特殊字符会发生转义，导致前端报错
 		for(var i=0;i<content.length;i++){
 			var item = content[i]
 			item.forEach(function(item,index,list){
@@ -79,7 +79,7 @@
 		console.log('---------------拼接的字符串---------------\n' + context)
 
 		context = encodeURIComponent(context)
-		downloadLink.download = '{{ report.title|safe }}' + '.csv' // 下载的文件名称
+		downloadLink.download = '{{ report.title|safe }}' + '.csv' // 下载的文件名称，记得加引号
 		downloadLink.href = "data:text/csv;charset=utf-8,\ufeff" + context; //加上 \ufeff BOM 头
 		downloadLink.click();
 
@@ -96,7 +96,7 @@
 		<p class="uk-article-meta">{{ report.created_at|datetime }}</p>
 		<p>{{ report.html_content|safe }}</p>
 	</article>
-	<p>{{ report.csv }}</p>
+	<!-- <p>{{ report.csv }}</p> -->
 	<button onclick="doDownload()">下载csv</button>
 	<a id="downloadLink" download="downlaodf.csv" href="#"></a> 
 
