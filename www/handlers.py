@@ -281,7 +281,7 @@ async def api_create_report(request, *, title):
 			title=title.strip()
 		)
 	await report.save()
-	return 'redirect:/manage/reports'
+	return report
 
 @post('/api/reports/{id}')
 async def api_update_report(id, request, *, title):

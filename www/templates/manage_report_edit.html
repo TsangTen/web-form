@@ -22,7 +22,7 @@
 							$form.showFormError(err);
 						}
 						else {
-							return location.assign('/api/reports/' + r.id);
+							return location.assign('/manage/');
 						}
 					});
 				}
@@ -53,15 +53,6 @@
 
 {% block content %}
 
-<div class="uk-width-1-1 uk-margin-bottom">
-	<div class="uk-panel uk-panel-box">
-		<ul class="uk-breakcrumb">
-			<li><a href="/manage/records">xx</a></li>
-			<li><a href="/manage/reports">报告</a></li>
-			<li><a href="/manage/users">用户</a></li>
-		</ul>
-	</div>
-</div>
 <div id="error" class="uk-width-1-1"></div>
 <div id="loading" class="uk-width-1-1 uk-text-center">
 	<span><i class="uk-icon-spinner uk-icon-medium uk-icon-spin"></i>正在加载...</span>
@@ -93,7 +84,7 @@
 		-->
 		<div class="uk-form-row">
 			<button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-save"></i>保存</button>
-			<a href="/manage/blogs" class="uk-button"><i class="uk-icon-times"></i>取消</a>
+			<a href="/manage/reports" class="uk-button"><i class="uk-icon-times"></i>取消</a>
 		</div>
 	</form>
 </div>
