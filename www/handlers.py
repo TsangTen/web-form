@@ -54,17 +54,31 @@ def text2html(text):
 	)
 	return ''.join(lines)
 
+reoprt_keys = [
+	'major_class',
+	'app_name',
+	'rule',
+	'type_of_change',
+	'platform',
+	'test_env',
+	'recognition',
+	'block_from_beginning',
+	'block_at_midway',
+	'bug',
+	'remarks',
+	'user_name',
+	'created_at'
+]
+
 def sheet2html(row):
 	l = list()
-	for k, v in row.items():
-		if k == 'id' or k == 'report_id':
-			continue
-		elif k == 'created_at':
-			dt = datetime.fromtimestamp(v)
+	for key in reoprt_keys:
+		if key == 'created_at':
+			dt = datetime.fromtimestamp(row[key])
 			l.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
 			continue
 		else:
-			l.append(v)
+			l.append(row[key])
 	line = map(
 		lambda s: '<td>%s</td>' % str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
 		l
@@ -73,15 +87,13 @@ def sheet2html(row):
 
 def sheet2list(row):
 	l = list()
-	for k, v in row.items():
-		if k == 'id' or k == 'report_id':
-			continue
-		elif k == 'created_at':
-			dt = datetime.fromtimestamp(v)
+	for key in reoprt_keys:
+		if key == 'created_at':
+			dt = datetime.fromtimestamp(row[key])
 			l.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
 			continue
 		else:
-			l.append(v)
+			l.append(row[key])
 	line = map(str, l)
 	return list(line)
 
