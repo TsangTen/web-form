@@ -54,7 +54,7 @@ def text2html(text):
 	)
 	return ''.join(lines)
 
-reoprt_keys = [
+record_keys = [
 	'major_class',
 	'app_name',
 	'rule',
@@ -70,15 +70,19 @@ reoprt_keys = [
 	'created_at'
 ]
 
-def sheet2html(row):
-	l = list()
-	for key in reoprt_keys:
+def get_record(row):
+	line = list()
+	for key in record_keys:
 		if key == 'created_at':
 			dt = datetime.fromtimestamp(row[key])
-			l.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
+			line.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
 			continue
 		else:
-			l.append(row[key])
+			line.append(row[key])
+	return line
+
+def sheet2html(row):
+	l = get_record(row)
 	line = map(
 		lambda s: '<td>%s</td>' % str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
 		l
@@ -86,14 +90,7 @@ def sheet2html(row):
 	return ''.join(line)
 
 def sheet2list(row):
-	l = list()
-	for key in reoprt_keys:
-		if key == 'created_at':
-			dt = datetime.fromtimestamp(row[key])
-			l.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
-			continue
-		else:
-			l.append(row[key])
+	l = get_record(row)
 	line = map(str, l)
 	return list(line)
 
@@ -398,18 +395,7 @@ async def api_create_record(
 	report = await Reports.find(id)
 	if report is None:
 		raise APIResourceNotFoundError('Report')
-	if recognition == '无法识别':
-		recognition = False
-	else:
-		recognition = True
-	if block_from_beginning == 'Fail':
-		block_from_beginning = False
-	else:
-		block_from_beginning = True
-	if block_at_midway == 'Fail':
-		block_at_midway = False
-	else:
-		block_at_midway = True
+	
 	record = Records(
 		report_id=report.id, 
 		major_class=major_class.strip(), 
@@ -418,9 +404,9 @@ async def api_create_record(
 		type_of_change=type_of_change.strip(),
 		platform=platform.strip(),
 		test_env=test_env.strip(),
-		recognition=recognition,
-		block_from_beginning=block_from_beginning,
-		block_at_midway=block_at_midway,
+		recognition=recognition.strip(),
+		block_from_beginning=block_from_beginning.strip(),
+		block_at_midway=block_at_midway.strip(),
 		bug=bug.strip(),
 		user_name = user.name,
 		remarks=remarks.strip()
