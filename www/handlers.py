@@ -299,6 +299,12 @@ async def api_delete_report(request, *, id):
 	check_admin(request)
 	report = await Reports.find(id)
 	await report.remove()
+	records = await Records.findAll('report_id=?', [id], orderBy='created_at desc')
+	for r in records:
+		record = await Records.find(r['id'])
+		if record is None:
+			raise APIResourceNotFoundError('Record', 'Not Found!')
+		await record.remove()
 	return dict(id=id)
 
 @get('/api/reports')
