@@ -141,7 +141,7 @@ names = [
 	'改动类型',
 	'平台类型',
 	'测试环境',
-	'可识别',
+	'识别效果',
 	'开始封堵',
 	'中途封堵',
 	'bug',
@@ -281,7 +281,9 @@ async def api_create_report(request, *, title):
 			title=title.strip()
 		)
 	await report.save()
-	return report
+	return {
+		'__template__':  'manage_report_edit.html'
+	}
 
 @post('/api/reports/{id}')
 async def api_update_report(id, request, *, title):
