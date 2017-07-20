@@ -13,6 +13,7 @@ from fabric.api import *
 
 # 服务器登录用户名：
 env.user = 'ten'
+env.password = '123456'
 # sudo用户为root：
 env.sudo_user = 'root'
 # 服务器地址，可以有多个，一次部署：
