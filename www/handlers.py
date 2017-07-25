@@ -16,7 +16,7 @@ from datetime import datetime
 import markdown2
 from coroweb import get, post
 from apis import APIValueError, APIResourceNotFoundError, APIError, Page,APIPermissionError
-from models import User, Reports, Records, next_id
+from models import User, Reports, Records, next_id, Daily
 from config import configs
 
 COOKIE_NAME = 'webform'
@@ -54,25 +54,9 @@ def text2html(text):
 	)
 	return ''.join(lines)
 
-record_keys = [
-	'major_class',
-	'app_name',
-	'rule',
-	'type_of_change',
-	'platform',
-	'test_env',
-	'recognition',
-	'block_from_beginning',
-	'block_at_midway',
-	'bug',
-	'remarks',
-	'user_name',
-	'created_at'
-]
-
-def get_record(row):
+def get_record(row, keys):
 	line = list()
-	for key in record_keys:
+	for key in keys:
 		if key == 'created_at':
 			dt = datetime.fromtimestamp(row[key])
 			line.append('%s-%s-%s' % (dt.year, dt.month, dt.day))
@@ -81,16 +65,16 @@ def get_record(row):
 			line.append(row[key])
 	return line
 
-def sheet2html(row):
-	l = get_record(row)
+def sheet2html(row, keys):
+	l = get_record(row, keys)
 	line = map(
 		lambda s: '<td>%s</td>' % str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'),
 		l
 	)
 	return ''.join(line)
 
-def sheet2list(row):
-	l = get_record(row)
+def sheet2list(row, keys):
+	l = get_record(row, keys)
 	line = map(str, l)
 	return list(line)
 
@@ -150,8 +134,7 @@ names = [
 	'日期'
 ]
 
-def get_col_name():
-	global names
+def get_col_name(names):
 	l = list()
 	for name in names:
 		l.append('<td>' + name + '</td>')
@@ -163,12 +146,27 @@ async def get_report(id):
 	report = await Reports.find(id)
 	records = await Records.findAll('report_id=?', [id], orderBy='created_at desc')
 	report.html_sheet = '<table border="1">' + '<tr>'
-	report.html_sheet = report.html_sheet + get_col_name() + '</tr>'
+	report.html_sheet = report.html_sheet + get_col_name(names) + '</tr>'
 	report.csv = [names,]
+	record_keys = [
+			'major_class',
+			'app_name',
+			'rule',
+			'type_of_change',
+			'platform',
+			'test_env',
+			'recognition',
+			'block_from_beginning',
+			'block_at_midway',
+			'bug',
+			'remarks',
+			'user_name',
+			'created_at'
+		]
 	for record in records:
-		report.csv.append(sheet2list(record))
+		report.csv.append(sheet2list(record, record_keys))
 		# logging.info('Type: %s\nRow: %s' %(type(record), record))
-		record.html_sheet = sheet2html(record)
+		record.html_sheet = sheet2html(record, record_keys)
 		record.html_sheet = '<tr>' + record.html_sheet + '</tr>'
 		# logging.info(record.html_sheet)
 		report.html_sheet += record.html_sheet
@@ -372,32 +370,20 @@ async def api_create_record(
 		platform, test_env, recognition, block_from_beginning,
 		block_at_midway, bug, remarks
 	):
-	logging.info('---------------------------------==')
+	logging.info('---------------api create record------------------')
 	user = request.__user__
 	if user is None:
 		raise APIPermissionError('Please signin first.')
-	if not major_class or not major_class.strip():
-		raise APIValueError('major_class', 'empty!')
-	if not app_name or not app_name.strip():
-		raise APIValueError('app_name', 'empty!')
-	if not rule or not rule.strip():
-		raise APIValueError('rule', 'empty!')
-	if not type_of_change or not type_of_change.strip():
-		raise APIValueError('type_of_change', 'empty!')
-	if not platform or not platform.strip():
-		raise APIValueError('platform', 'empty!')
-	if not test_env or not test_env.strip():
-		raise APIValueError('test_env', 'empty!')
-	if not recognition or not recognition.strip():
-		raise APIValueError('recognition', 'empty!')
-	if not block_from_beginning or not block_from_beginning.strip():
-		raise APIValueError('block_from_beginning', 'empty!')
-	if not block_at_midway or not block_at_midway.strip():
-		raise APIValueError('block_at_midway', 'empty!')
-	if not bug or not bug.strip():
-		raise APIValueError('bug', 'empty!')
-	if not remarks or not remarks.strip():
-		raise APIValueError('remarks', 'empty!')
+
+	args = [
+		major_class, app_name, rule, type_of_change,
+		platform, test_env, recognition, block_from_beginning,
+		block_at_midway, bug, remarks
+	]
+	for arg in args:
+		if not arg or not arg.strip():
+			raise APIValueError('%s' % arg, 'empty!')
+
 	report = await Reports.find(id)
 	if report is None:
 		raise APIResourceNotFoundError('Report')
@@ -428,3 +414,115 @@ async def api_delete_records(id, request):
 		raise APIResourceNotFoundError('Record', 'Not Found!')
 	await record.remove()
 	return dict(id=id)
+
+daily_names = [
+	'反馈时间',
+	'反馈方式',
+	'支持类型',
+	'TD编号',
+	'反馈人员',
+	'问题描叙',
+	'处理时间',
+	'是否完成',
+	'处理情况（问题的原因）',
+	'消耗时间（人天）',
+	'处理人'
+]
+
+@get('/daily/')
+async def api_get_daily(request, *, page='1'):
+	global daily_names
+	page_index = get_page_index(page)
+	Daily_report = type('Daily_report', (object,), dict())
+	report = Daily_report
+	report.id = int(time.time())
+	report.title = '日报'
+	report.html_content = '没有任何日报记录'
+	report.created_at = time.time()
+	num = await Daily.findNumber('count(id)')
+	p = Page(num, page_index)
+	if num == 0:
+		return {
+			'__template__': 'daily.html',
+			'report': report
+		}
+	if request.__user__.admin:
+		daily_records = await Daily.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
+	else:
+		report.tilte = '%s的日报' % request.__user__.name
+		work_id = request.__user__.work_id
+		daily_records = await Daily.findAll('work_id=?', [work_id], orderBy='created_at desc')
+		if not daily_records:
+			return '没有您的日报记录'
+	daily_keys = [
+			'feedback_time', 
+			'feedback_way', 
+			'support_type', 
+			'td_num', 
+			'who_feedback', 
+			'issue_desc', 
+			'deal_time', 
+			'finished', 
+			'deal_desc', 
+			'time_cost',
+			'who'
+		]
+	report.html_sheet = '<table border="1">' + '<tr>'
+	report.html_sheet = report.html_sheet + get_col_name(daily_names) + '</tr>'
+	for record in daily_records:
+		if record.finished:
+			record.finished = '是'
+		else:
+			record.finished = '否'
+		record.html_sheet = sheet2html(record, daily_keys)
+		record.html_sheet = '<tr>' + record.html_sheet + '</tr>'
+		report.html_sheet += record.html_sheet
+	report.html_sheet += '</table>'
+	report.html_content = markdown2.markdown(report.html_sheet)
+	return {
+		'__template__': 'daily.html',
+		'report': report
+	}
+
+@post('/api/daily/{id}')
+async def api_create_daily_record(
+		id, request, *, 
+		feedback_time, feedback_way, support_type, td_num, who_feedback, 
+		issue_desc, deal_time, finished, deal_desc, time_cost
+	):
+
+	logging.info('---------------api create daily record------------------')
+	user = request.__user__
+
+	if user is None:
+		raise APIPermissionError('Please signin first.')
+
+	args = [
+			feedback_time, feedback_way, support_type, td_num, who_feedback, 
+			issue_desc, deal_time, finished, deal_desc, time_cost
+		]
+	for arg in args:
+		if not arg or not arg.strip():
+			raise APIValueError('%s' % arg, 'empty!')
+
+	if finished == '是':
+		finished = True
+	else:
+		finished = False
+
+	daily = Daily(
+			work_id=user.work_id,
+			feedback_time=feedback_time,
+			feedback_way=feedback_way,
+			support_type=support_type,
+			td_num=td_num,
+			who_feedback=who_feedback,
+			issue_desc=issue_desc,
+			deal_time=deal_time,
+			finished=finished,
+			deal_desc=deal_desc,
+			time_cost=time_cost,
+			who=user.name
+		)
+	await daily.save()
+	return daily

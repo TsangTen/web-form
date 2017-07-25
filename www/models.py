@@ -5,7 +5,7 @@ __author__ = 'Ten Tsang'
 
 import time
 import uuid
-from orm import Model, StringField, BooleanField, FloatField
+from orm import Model, StringField, BooleanField, FloatField, IntegeField
 
 def next_id():
 	return '%015d%s000' % (int(time.time() * 1000), uuid.uuid4().hex)
@@ -45,5 +45,22 @@ class Records(Model):
 	remarks = StringField(ddl='varchar(500)')
 	user_name = StringField(ddl='varchar(50)')
 	created_at = FloatField(default=time.time)
-		
-		
+
+class Daily(Model):
+	__table__ = 'daily'
+
+	id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+	work_id = StringField(ddl='varchar(50)')
+	feedback_time = StringField(ddl='varchar(50)')
+	feedback_way = StringField(ddl='varchar(50)')
+	support_type = StringField(ddl='varchar(50)')
+	td_num = IntegeField()
+	who_feedback = StringField(ddl='varchar(50)')
+	issue_desc = StringField(ddl='varchar(100)')
+	deal_time = StringField(ddl='varchar(50)')
+	finished = BooleanField()
+	deal_desc = StringField(ddl='varchar(200)')
+	time_cost = FloatField()
+	who = StringField(ddl='varchar(50)')
+	created_at = FloatField(default=time.time)
+	

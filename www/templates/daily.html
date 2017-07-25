@@ -1,0 +1,151 @@
+{% extends '__base__.html' %}
+
+{% block title %}{{ report.title }}{% endblock %}
+
+{% block beforehead %}
+
+<script type="text/javascript">
+	var daily_url = '/api/daily/{{ report.id }}';
+
+	$(function(){
+		var $form = $('#form-daily');
+		$form.submit(function(e){
+			e.preventDefault();
+			// $form.showFormError('---------------');
+			var feedback_time = $form.find('input').eq(0).val().trim();
+			var feedback_way = $form.find('select').eq(0).val().trim();
+			var support_type = $form.find('select').eq(1).val().trim();
+			var td_num = $form.find('input').eq(1).val().trim();
+			var who_feedback = $form.find('input').eq(2).val().trim();
+			var issue_desc = $form.find('input').eq(3).val().trim();
+			var deal_time = $form.find('input').eq(4).val().trim();
+			var finished = $form.find('select').eq(2).val().trim();
+			var deal_desc = $form.find('input').eq(5).val().trim();
+			var time_cost = $form.find('input').eq(6).val().trim();
+			// alert(content)
+			if(feedback_time===''){
+				return $form.showFormError('反馈时间不能为空！');
+			}
+			if(td_num===''){
+				return $form.showFormError('TD编号不能为空！');
+			}
+			if(who_feedback===''){
+				return $form.showFormError('反馈人员不能为空！')
+			}
+			if(issue_desc===''){
+				return $form.showFormError('问题描述不能为空！')
+			}
+			if(deal_time===''){
+				return $form.showFormError('处理时间不能为空!')
+			}
+			if(deal_desc===''){
+				return $form.showFormError('处理情况不能为空！')
+			}
+			if(time_cost===''){
+				return $form.showFormError('消耗时间不能为空！')
+			}
+			$form.postJSON(daily_url, { 
+				feedback_time: feedback_time,
+				feedback_way: feedback_way,
+				support_type: support_type,
+				td_num: td_num,
+				who_feedback: who_feedback,
+				issue_desc: issue_desc,
+				deal_time: deal_time,
+				finished: finished,
+				deal_desc: deal_desc,
+				time_cost: time_cost
+			}, function(err, result){
+				if(err){
+					return $form.showFormError(err);
+				}
+				refresh();
+			});
+		});
+	});
+
+
+	// function doDownload(){
+
+	// 	var downloadLink = document.getElementById('downloadLink')
+	// 	var context = "";
+	// 	var content = {{ report.csv|safe }}  //记得加safe，不然特殊字符会发生转义，导致前端报错
+	// 	for(var i=0;i<content.length;i++){
+	// 		var item = content[i]
+	// 		item.forEach(function(item,index,list){
+	// 			context = context + item + ','
+	// 		})
+	// 		context = context + '\n'
+	// 	}
+	// 	console.log('---------------拼接的字符串---------------\n' + context)
+
+	// 	context = encodeURIComponent(context)
+	// 	downloadLink.download = '{{ report.title|safe }}' + '.csv' // 下载的文件名称，记得加引号
+	// 	downloadLink.href = "data:text/csv;charset=utf-8,\ufeff" + context; //加上 \ufeff BOM 头
+	// 	downloadLink.click();
+
+	// }
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="uk-width-medium-3-4">
+	<article class="uk-article">
+		<h2>{{ report.title }}</a></h2>
+		<p class="uk-article-meta">{{ report.created_at|datetime }}</p>
+		<p>{{ report.html_content|safe }}</p>
+	</article>
+	<!-- <p>{{ report.csv }}</p> -->
+	<!-- <button onclick="doDownload()">下载csv</button> -->
+	<!-- <a id="downloadLink" download="downlaodf.csv" href="#"></a>  -->
+
+	<hr class="uk-article-divider">
+
+	{% if __user__ %}
+	<h3>添加记录</h3>
+
+	<article class="uk-daily">
+		<header class="uk-daily-header">
+			<h4 class="uk-daily-title">{{ __user__.name }}</h4>
+		</header>
+		<div class="uk-daily-body">
+			<form id="form-daily" class="uk-form">
+				<div class="uk-alert uk-alert-danger uk-hidden"></div>
+				<div class="uk-form-row">
+					<input type="text" placeholder="反馈时间" name="feedback_time">
+					<select>
+						<option value="需求">需求</option>
+						<option value="其他">其他</option>
+					</select>
+					<select>
+						<option value="TD技术支持">TD技术支持</option>
+						<option value="TD版本问题">TD版本问题</option>
+						<option value="其他">其他</option>
+					</select>
+					<input type="text" placeholder="TD编号(非TD问题输：0)" name="td_num">
+					<input type="text" placeholder="反馈人员" name="who_feedback">
+					<input type="text" placeholder="问题描述" name="issue_desc">
+					<input type="text" placeholder="处理时间" name="deal_time">
+					<select>
+						<option value="是">是</option>
+						<option value="否">否</option>
+					</select>
+					<input type="text" placeholder="处理情况(问题的原因)" name="deal_desc">
+					<input type="text" placeholder="消耗时间(人/天)" name="time_cost">
+					<!--
+					<textarea rows="6" placeholder="说点什么吧" style="width: 100%;resize: none;"></textarea>
+					-->
+				</div>
+				<div class="uk-form-row">
+					<button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-daily"></i>提交</button>
+				</div>
+			</form>
+		</div>
+	</article>
+
+	{% endif %}
+<!---->
+
+{% endblock %}

@@ -46,4 +46,21 @@ create table records(
 	primary key (`id`)
 )engine=innodb default charset=utf8;
 
-
+create table daily(
+	`id` varchar(50) not null,
+	`work_id` varchar(50) not null,
+	`feedback_time` varchar(50) not null,
+	`feedback_way` varchar(50) not null,
+	`support_type` varchar(50) not null,
+	`td_num` int not null,
+	`who_feedback` varchar(50) not null,
+	`issue_desc` varchar(100) not null,
+	`deal_time` varchar(50) not null,
+	`finished` bool not null,
+	`deal_desc` varchar(500) not null,
+	`time_cost` real not null,
+	`who` varchar(50) not null,
+	`created_at` real not null,
+	key `idx_created_at` (`created_at`),
+	primary key (`id`)
+)engine=innodb default charset=utf8;
