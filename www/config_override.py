@@ -5,6 +5,7 @@ __author__ = 'Ten Tsang'
 
 configs = {
 	'db': {
-		'host': '127.0.0.1'
+		'host': '192.168.168.247',
+		'password': '123456'
 	}
 }
