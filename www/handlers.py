@@ -497,6 +497,11 @@ async def api_create_daily_record(
 	if user is None:
 		raise APIPermissionError('Please signin first.')
 
+	if not isinstance(eval(td_num), int):
+		raise APIValueError('td_num', 'td_num should be "int"!')
+	if not isinstance(eval(time_cost), float):
+		raise APIValueError('time_cost', 'time_cost should be "float"!')
+
 	args = [
 			feedback_time, feedback_way, support_type, td_num, who_feedback, 
 			issue_desc, deal_time, finished, deal_desc, time_cost
